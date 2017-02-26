@@ -91,6 +91,13 @@ class rest_client
     * @var boolean
     */
     protected $use_ssl_test_mode = false;
+    
+    /**
+    * Flag to determine if we need to autofollow location, usefull for homepages where resource is not specified
+    * 
+    * @var boolean
+    */
+    protected $autofollow_location = true;
 
     /**
     * Array containing headers to be used for request
@@ -648,6 +655,24 @@ class rest_client
         
         return $this;
     }
+    
+    /**
+    * Sets whether autofollow location is to be used
+    * 
+    * @param boolean $value
+    * @return rest_client
+    * @throws Exception
+    */
+    public function set_autofollow_location($value = NULL) {
+        if (!is_bool($value)) {
+            throw new Exception('Non-boolean value passed as parameter - ' . __METHOD__ . ' Line ' . __LINE__);    
+        }
+        $this->autofollow_location = $value;
+        
+        return $this;
+    }
+    
+    
     /**
     * Sets basic authentication credentials
     * 
@@ -738,6 +763,8 @@ class rest_client
         }
         $this->_curl_setup();
         $this->_set_request_url($action);
+        
+        curl_setopt($this->curl , CURLOPT_FOLLOWLOCATION, $this->autofollow_location);
         curl_setopt($this->curl, CURLOPT_HTTPGET, true); // explicitly set the method to GET
         $this->_curl_exec();
         
@@ -771,6 +798,7 @@ class rest_client
         $this->_curl_multi_setup($handles_needed);
         $this->_set_multi_request_urls($actions);
         foreach($this->curl_multi_handle_array as $curl) {
+	    curl_setopt($this->curl , CURLOPT_FOLLOWLOCATION, $this->autofollow_location);
             curl_setopt($curl, CURLOPT_HTTPGET, true); // explicitly set the method to GET    
         }
         $this->_curl_multi_exec();
@@ -983,6 +1011,7 @@ class rest_client
         }
         $this->_curl_setup();
         $this->_set_request_url($action);
+        curl_setopt($this->curl , CURLOPT_FOLLOWLOCATION, $this->autofollow_location);
         curl_setopt($this->curl, CURLOPT_HTTPGET, true); // explicitly set the method to GET
         curl_setopt($this->curl, CURLOPT_NOBODY, true); // set as HEAD request
         $this->_curl_exec();
